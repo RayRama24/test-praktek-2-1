@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Aplikasi Web Modern dengan Vercel Serverless Function dan Static Frontend">
+  <title>Vercel Serverless & Web App Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="background-glow"></div>
+  
+  <main class="container">
+    <header class="header">
+      <div class="badge">Vercel Ready</div>
+      <h1>Project Dashboard & Serverless API</h1>
+      <p class="subtitle">Repositori Web Apps Modern dengan Arsitektur Serverless Function di Vercel</p>
+    </header>
+
+    <section class="grid">
+      <!-- Status Card -->
+      <div class="card glass">
+        <div class="card-icon">🚀</div>
+        <h2>Struktur Repositori</h2>
+        <ul class="repo-list">
+          <li><span class="folder">/api</span> — Serverless Node.js Functions</li>
+          <li><span class="folder">/public</span> — Static Web Assets & UI</li>
+          <li><span class="file">vercel.json</span> — Konfigurasi Vercel Deployment</li>
+        </ul>
+      </div>
+
+      <!-- Serverless Function Tester Card -->
+      <div class="card glass">
+        <div class="card-icon">⚡</div>
+        <h2>Serverless API Tester</h2>
+        <p>Uji Serverless Endpoint <code>/api/hello</code> secara real-time:</p>
+        
+        <form id="api-form" class="api-form">
+          <input type="text" id="user-name" placeholder="Masukkan nama kamu..." autocomplete="off" />
+          <button type="submit" id="btn-fetch">Kirim Request</button>
+        </form>
+
+        <div class="response-box">
+          <div class="response-header">
+            <span>Response JSON</span>
+            <span id="response-status" class="status-badge">Idle</span>
+          </div>
+          <pre><code id="json-output">// Klik "Kirim Request" untuk memanggil API...</code></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Web Serverless Project. Built with Vercel, HTML5, CSS3, & Node.js.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
