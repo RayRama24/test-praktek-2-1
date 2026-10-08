@@ -6,6 +6,9 @@ Proyek web application modern yang terintegrasi dengan Vercel Serverless Functio
 
 ```
 /
+├── .github/
+│   └── workflows/
+│       └── deploy.yml  # Pipeline CI/CD GitHub Actions
 ├── api/
 │   └── hello.js        # Vercel Serverless Function API
 ├── public/
@@ -22,11 +25,10 @@ Proyek web application modern yang terintegrasi dengan Vercel Serverless Functio
 - **Serverless API Endpoint**: `/api/hello` (Serverless Node.js function)
 - **Static Frontend**: `/public/index.html`
 - **Vercel Ready**: Konfigurasi `vercel.json` siap dideploy ke Vercel platform.
-- **Git Integration**: Terhubung ke repositori GitHub public.
+- **Git & CI/CD Integration**: Terhubung ke repositori GitHub public dengan GitHub Actions (`.github/workflows/deploy.yml`).
+- **Secrets Injection**: Menggunakan GitHub Repository Secrets (`VERCEL_TOKEN`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`).
 
-## 🛠️ Menjalankan Lokal
+## ⚙️ CI/CD Pipeline Status
 
-```bash
-# Menggunakan Vercel CLI
-npx vercel dev
-```
+Pipeline otomatis terpicu setiap ada push ke branch `main`.
+Status workflow dapat dipantau pada tab Actions: [https://github.com/RayRama24/test-praktek-2-1/actions](https://github.com/RayRama24/test-praktek-2-1/actions)
