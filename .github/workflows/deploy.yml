@@ -30,7 +30,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-          vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} \
+          vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }} \
             -e SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
             -e SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
             --build-env SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
