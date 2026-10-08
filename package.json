@@ -2,6 +2,7 @@
   "name": "test-praktek-2-1",
   "version": "1.0.0",
   "description": "Web Application with Vercel Serverless Functions and Public Front-End",
+  "type": "module",
   "main": "api/hello.js",
   "scripts": {
     "dev": "vercel dev",

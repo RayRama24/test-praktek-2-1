@@ -1,7 +1,6 @@
-module.exports = (req, res) => {
+export default function handler(req, res) {
   const { name = 'Visitor' } = req.query || {};
 
-  // Membaca environment variables yang di-injeksi dari secrets tanpa hardcode
   const supabaseUrlStatus = process.env.SUPABASE_URL ? 'Terhubung (Secrets)' : 'Belum Dikonfigurasi';
   const supabaseKeyStatus = process.env.SUPABASE_ANON_KEY ? 'Terhubung (Secrets Masked)' : 'Belum Dikonfigurasi';
 
@@ -24,4 +23,4 @@ module.exports = (req, res) => {
       'Injected GitHub Secrets (VERCEL_TOKEN, SUPABASE_URL, SUPABASE_ANON_KEY)'
     ]
   });
-};
+}
