@@ -31,7 +31,7 @@ export default async function handler(req, res) {
   const rawBody = req.body || {};
   const bodyString = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody);
 
-  // Secret Key untuk HMAC (diambil dari environment variable HMAC_SECRET atau fallback secret)
+  // Secret Key untuk HMAC (diambil dari environment variable HMAC_SECRET / SUPABASE_ANON_KEY / default secret)
   const HMAC_SECRET = process.env.HMAC_SECRET || process.env.SUPABASE_ANON_KEY || 'secret-webhook-key';
 
   // c. Buat HMAC-SHA256 dari body string
@@ -40,8 +40,7 @@ export default async function handler(req, res) {
     .update(bodyString)
     .digest('hex');
 
-  // d. Bandingkan HMAC yang dibuat dengan nilai di header x-signature menggunakan perbandingan string biasa
-  // e. Jika tidak cocok, tolak dengan 401 Unauthorized
+  // d & e. Bandingkan HMAC dengan header x-signature. Jika tidak cocok, tolak dengan 401 Unauthorized
   if (calculatedHmac !== signature) {
     return res.status(401).json({
       status: 'error',
@@ -53,47 +52,68 @@ export default async function handler(req, res) {
     });
   }
 
-  // Lanjutkan pengiriman ke Telegram jika validasi HMAC berhasil
-  let telegramStatus = 'Skipped (Telegram credentials missing)';
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
+  // Extract data payload dari Supabase untuk notifikasi Telegram
+  const record = rawBody.record || rawBody.new || rawBody;
+  
+  // Tangkap Status Kejadian, Level Ancaman, dan Detail Pesan
+  const statusKejadian = record.status || rawBody.status || (record.is_danger ? 'BAHAYA' : 'AMAN');
+  const levelAncaman = record.level_ancaman || record.level || record.severity || (statusKejadian === 'BAHAYA' ? 'TINGGI' : 'RENDAH');
+  const detailPesan = record.detail_pesan || record.pesan || record.detail || record.judul || record.title || JSON.stringify(record);
 
-  if (botToken && chatId) {
+  // Format pesan notifikasi Telegram Bot Alert
+  const telegramMessage = 
+`🚨 *ALERT NOTIFIKASI WEBHOOK SUPABASE*
+
+📌 *Status Kejadian:* ${statusKejadian}
+⚠️ *Level Ancaman:* ${levelAncaman}
+📝 *Detail Pesan:* ${detailPesan}
+
+📂 *Informasi Payload:*
+• Event: \`${rawBody.type || 'INSERT'}\`
+• Tabel: \`${rawBody.table || 'laporan_keamanan'}\`
+• Schema: \`${rawBody.schema || 'public'}\`
+⏱ *Waktu:* ${new Date().toISOString()}`;
+
+  // Menggunakan Environment Variables TELEGRAM_BOT_TOKEN dan TELEGRAM_CHAT_ID (tanpa hardcode)
+  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+
+  let telegramDeliveryStatus = 'Skipped: TELEGRAM_BOT_TOKEN atau TELEGRAM_CHAT_ID belum dikonfigurasi di Environment Variables';
+
+  if (TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID) {
     try {
-      const messageText = `📩 *Laporan Webhook Supabase Terverifikasi*\n\n` +
-                          `*Event:* \`${rawBody.type || 'INSERT'}\`\n` +
-                          `*Tabel:* \`${rawBody.table || 'laporan'}\`\n` +
-                          `*Detail:* \`\`\`${JSON.stringify(rawBody.record || rawBody, null, 2)}\`\`\``;
-
-      const tgRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+      const tgRes = await fetch(telegramUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          chat_id: chatId,
-          text: messageText,
+          chat_id: TELEGRAM_CHAT_ID,
+          text: telegramMessage,
           parse_mode: 'Markdown'
         })
       });
-      
-      if (tgRes.ok) {
-        telegramStatus = 'Sent to Telegram successfully';
+
+      const tgData = await tgRes.json();
+      if (tgRes.ok && tgData.ok) {
+        telegramDeliveryStatus = 'Notifikasi Telegram berhasil dikirim';
       } else {
-        telegramStatus = `Telegram API error: ${tgRes.statusText}`;
+        telegramDeliveryStatus = `Gagal mengirim ke Telegram API: ${tgData.description || tgRes.statusText}`;
       }
     } catch (err) {
-      telegramStatus = `Telegram send error: ${err.message}`;
+      telegramDeliveryStatus = `Error koneksi Telegram API: ${err.message}`;
     }
   }
 
   return res.status(200).json({
     status: 'success',
-    message: 'Validasi HMAC-SHA256 berhasil. Laporan webhook diproses dan dilanjutkan ke Telegram.',
+    message: 'Validasi HMAC-SHA256 berhasil. Laporan webhook diproses dan notifikasi Telegram dipicu.',
     timestamp: new Date().toISOString(),
-    validation: {
-      algorithm: 'HMAC-SHA256',
-      signature_matched: true
+    alert_summary: {
+      status_kejadian: statusKejadian,
+      level_ancaman: levelAncaman,
+      detail_pesan: detailPesan
     },
-    telegram_delivery: telegramStatus,
+    telegram_delivery: telegramDeliveryStatus,
     payload_summary: rawBody
   });
 }
